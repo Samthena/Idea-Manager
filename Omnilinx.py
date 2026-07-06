@@ -78,6 +78,13 @@ def delete(id):
     except Exception as e:
         return f"There was a problem deleting that idea: {e}"
 
+
+@app.route('/confirm_delete/<int:id>')
+def confirm_delete(id):
+    idea = Todo.query.get_or_404(id)
+    return render_template('confirm_delete.html', idea=idea)
+
+
 @app.route('/search', methods=['GET']) 
 def search():
     query = request.args.get('q', '').strip()

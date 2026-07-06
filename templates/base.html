@@ -9,6 +9,44 @@
 </head>
 <body>
     {% block body %}{% endblock %}
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Сигурни ли сте, че искате да изтриете този запис?</h3>
+        <p id="deleteItemTitle"></p>
+
+        <div class="modal-buttons">
+            <a id="confirmDeleteBtn" class="confirm-btn">Да, изтрий</a>
+            <button class="cancel-btn" onclick="closeDeleteModal()">Отказ</button>
+        </div>
+    </div>
+</div>
+    <script>
+        function openDeleteModal(id, title) {
+            document.getElementById("deleteItemTitle").innerText = title;
+            document.getElementById("confirmDeleteBtn").href = "/delete/" + id;
+            document.getElementById("deleteModal").style.display = "block";
+        }
+
+        function closeDeleteModal() {
+            document.getElementById("deleteModal").style.display = "none";
+        }
+    </script>
+    <script>
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+        closeDeleteModal();
+    }
+});
+</script>
+<script>
+window.onclick = function(event) {
+    const modal = document.getElementById("deleteModal");
+    if (event.target === modal) {
+        closeDeleteModal();
+    }
+}
+</script>
 </div>
 </body>
 </html>

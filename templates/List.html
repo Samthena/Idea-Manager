@@ -47,7 +47,7 @@
         <td>
             <a href="{{ url_for('idea_details', id=idea.id) }}">Детайли</a>
             <a href="/update/{{ idea.id }}">Обнови</a>
-            <a href="/delete/{{ idea.id }}">Изтрий</a>
+            <a href="#" onclick="openDeleteModal({{ idea.id }}, '{{ idea.title }}')">Изтрий</a>
         </td>
     </tr>
     {% endfor %}
