@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<h1>{{ idea.title }}</h1>
+
+<p><strong>Description:</strong> {{ idea.description }}</p>
+<p><strong>Client:</strong> {{ idea.client }}</p>
+<p><strong>Meeting Date:</strong> {{ idea.meeting_date }}</p>
+<p><strong>Owner:</strong> {{ idea.owner }}</p>
+<p><strong>Status:</strong> {{ idea.status }}</p>
+<p><strong>Priority:</strong> {{ idea.priority }}</p>
+<p><strong>Added:</strong> {{ idea.date_created }}</p>
+
+<br>
+<a href="{{ url_for('index') }}">Back</a>
+{% endblock %}

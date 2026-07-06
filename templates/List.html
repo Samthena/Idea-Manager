@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Idea Manager</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+
+    <div class="center">
+        
+    <h1 style="text-align: center;">Idea Manager</h1>
+
+    {% if tasks|length < 1 %}
+    <h1 style="text-align: center;">There are no ideas, Create one Below!</h1>
+    {% else  %}
+ <table border=1 frame=box rules=all style="width:70%">
+    <tr>
+        <th>Unique ID</th>
+        <th>Idea</th>
+        <th>Client</th>
+        <th>Owner</th>
+        <th>Status</th>
+        <th>Meeting Date</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for idea in tasks %}
+    <tr>
+        <td>{{ idea.unique_id }}</td>
+
+        <td>
+            <a href="{{ url_for('idea_details', id=idea.id) }}">
+                {{ idea.title }}
+            </a>
+        </td>
+
+        <td>{{ idea.client }}</td>
+        <td>{{ idea.owner }}</td>
+
+        <td class="status {{ idea.status|lower|replace(' ', '-') }}">
+            {{ idea.status|lower }}
+        </td>
+
+        <td>{{ idea.meeting_date }}</td>
+
+        <td>
+            <a href="{{ url_for('idea_details', id=idea.id) }}">Детайли</a>
+            <a href="/update/{{ idea.id }}">Обнови</a>
+            <a href="/delete/{{ idea.id }}">Изтрий</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+    <br>
+    <a href="{{ url_for('search') }}">Search Tasks</a>
+    {% endif %}
+   <form action="/" method="POST" class="add-form">
+        <input type="text" name="title" placeholder="Idea Title">
+        <input type="text" name="description" placeholder="Description">
+        <input type="text" name="client" placeholder="Client">
+        <input type="datetime-local" name="meeting_date">
+        <input type="text" name="owner" placeholder="Owner">
+        <select name="status">
+            <option>Нова</option>
+            <option>Одобрена</option>
+            <option>В процес</option>
+            <option>Направена</option>
+            <option>Отказана</option>
+        </select>
+        <select name="priority">
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+        </select>
+
+        <input type="submit" value="Добави запис">
+    </form>
+
+</div>
+
+</div>
+{% endblock %}

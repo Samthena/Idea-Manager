@@ -1,0 +1,39 @@
+body {
+    margin: 0;
+    font-family: sans-serif
+    background: red !important;
+}
+.center {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+}
+.add-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-form input[type="text"] {
+    width: 250px;
+    margin-bottom: 10px;
+}
+table {
+    margin: 0 auto;
+}
+.status {
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 4px;
+    color: white;
+}
+.status.нова { background-color: #3498db; }       
+.status.одобрена { background-color: #2ecc71; }  
+.status.в-процес { background-color: #f1c40f; }   
+.status.направена { background-color: #9b59b6; }  
+.status.отказана { background-color: #e74c3c; }   
