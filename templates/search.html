@@ -13,40 +13,23 @@
 
 <br>
 
-{% if tasks %}
-<table>
+<table border=1 frame=box rules=all style="width:70%">
+    <thead>
     <tr>
         <th>Unique ID</th>
         <th>Idea</th>
-        <th>Description</th>
         <th>Client</th>
-        <th>Meeting Date</th>
         <th>Owner</th>
         <th>Status</th>
         <th>Priority</th>
-        <th>Added</th>
+        <th>Meeting Date</th>
         <th>Actions</th>
     </tr>
-
-{% for idea in tasks %}
-<tr>
-     <td>{{ idea.unique_id }}</td>
-            <td>{{ idea.title }}</td>
-            <td>{{ idea.description }}</td>
-            <td>{{ idea.client }}</td>
-            <td>{{ idea.meeting_date }}</td>
-            <td>{{ idea.owner }}</td>
-    <td>
-        <a href="{{ url_for('delete', id=idea.id) }}">Delete</a>
-        <br>
-        <a href="{{ url_for('update', id=idea.id) }}">Update</a>
-    </td>
-</tr>
-{% endfor %}
+    </thead>
+    <tbody id="ideaTableBody">
+    {% include '_idea_rows.html' %}
+    </tbody>
 </table>
-{% else %}
-    <p>No results found.</p>
-{% endif %}
 <br>
     <a href="{{ url_for('index') }}">Back</a>
 </div>

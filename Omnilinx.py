@@ -10,13 +10,13 @@ db.init_app(app)
 
 class Todo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(200), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
     client = db.Column(db.String(100), nullable=False)
     meeting_date = db.Column(db.DateTime, nullable=False)
     owner = db.Column(db.String(100), nullable=False)
-    status = db.Column(db.String(30), nullable=False, default='Not Started')
-    priority = db.Column(db.String(30), nullable=False, default='Low')
+    status = db.Column(db.String(30), nullable=False, default='Нова')
+    priority = db.Column(db.String(30), nullable=False, default='Няма')
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
     unique_id = db.Column(db.Integer, unique=True, nullable=False)
 
@@ -33,8 +33,6 @@ def index():
         client = request.form['client']
         meeting_date = request.form['meeting_date']
         owner = request.form['owner']
-        status = request.form['status']
-        priority = request.form['priority']
 
 
         meeting_date = datetime.strptime(request.form['meeting_date'], "%Y-%m-%dT%H:%M")
@@ -50,8 +48,6 @@ def index():
             client=client,
             meeting_date=meeting_date,
             owner=owner,
-            status=status,
-            priority=priority,
             unique_id=new_unique_id
         )
 
@@ -90,21 +86,52 @@ def search():
     query = request.args.get('q', '').strip()
 
     if not query:
-        return render_template('search.html', tasks=[])
-    
+        tasks = Todo.query.order_by(Todo.date_created.desc()).all()
+        return render_template('search.html', tasks=tasks, query=query)
+
     try:
-        title = text(query)
         uid = int(query)
     except ValueError:
-        title = None
         uid = None
 
     tasks = Todo.query.filter(
         (Todo.title.ilike(f"%{query}%")) |
+        (Todo.description.ilike(f"%{query}%")) |
+        (Todo.client.ilike(f"%{query}%")) |
+        (Todo.owner.ilike(f"%{query}%")) |
         (Todo.unique_id == uid)
     ).order_by(Todo.date_created).all()
 
-    return render_template('search.html', tasks=tasks)
+    return render_template('search.html', tasks=tasks, query=query)
+
+@app.route('/filter')
+def filter_tasks():
+    status = request.args.get('status')
+    priority = request.args.get('priority')
+    client = request.args.get('client')
+    owner = request.args.get('owner')
+
+    query = Todo.query
+
+    if status: 
+        query = query.filter(Todo.status == status)
+    if priority:
+        query = query.filter(Todo.priority == priority)
+    if client:
+        query = query.filter(Todo.client == client)
+    if owner:
+        query = query.filter(Todo.owner == owner)
+
+    tasks = query.order_by(Todo.date_created.desc()).all()
+
+    return render_template(
+        'List.html',
+        tasks=tasks,
+        status=status,
+        client=client,
+        owner=owner,
+        priority=priority
+     )
 
 
 @app.route('/update/<int:id>', methods = ['POST', 'GET'])
@@ -120,14 +147,16 @@ def update(id):
 
         task.owner = request.form['owner']
         task.status = request.form['status']
-        task.priority = request.form['priority']
+        task.priority = request.form.get('priority', 'Няма')
         try:
             db.session.commit()
             return redirect('/')
         except:
             return 'There was an issue updating the idea'
     else:
-        return render_template('update.html', task=task)
+        # Editing happens through the modal on the list page (POST only);
+        # there's no standalone update page, so just send GETs back there.
+        return redirect(url_for('index'))
 
 @app.route('/idea/<int:id>')
 def idea_details(id):

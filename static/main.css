@@ -23,7 +23,13 @@ body {
     margin-bottom: 10px;
 }
 table {
+    border-collapse: collapse;
     margin: 0 auto;
+}
+th, td {
+    border: 1px solid #000;
+    padding: 8px 12px;
+    vertical-align: middle;
 }
 .status {
     font-weight: bold;
@@ -37,9 +43,54 @@ table {
 .status.направена { background-color: #9b59b6; }  
 .status.отказана { background-color: #e74c3c; }   
 
+.priority {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+}
+
+.priority.high {
+    background: #e74c3c;
+}
+
+.priority.medium {
+    background: #f39c12;
+}
+
+.priority.low {
+    background: #2ecc71;
+}
+.priority.none {
+    background: #7f8c8d;
+}
+
+.input-error {
+    border: 2px solid red !important;
+    background-color: #ffe6e6;
+}
+
+.search-bar {
+    width: 70%;
+    margin: 20px auto;
+    text-align: center;
+}
+
+#liveSearch {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+
 /* Modal backdrop */
 .modal {
     display: none;
+    align-items: center;
+    justify-content: center;
     position: fixed;
     z-index: 9999;
     inset: 0;
@@ -58,6 +109,15 @@ table {
     text-align: center;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
     animation: slideUp 0.25s ease-out;
+}
+
+.update-modal {
+    width: 320px;          
+    max-height: 80vh;  
+    overflow-y: auto;   
+    padding: 18px;         
+    margin: 5% auto;  
+    border-radius: 10px;
 }
 
 /* Title */
@@ -108,6 +168,35 @@ table {
 .cancel-btn:hover {
     background: #a6b1b7;
 }
+.modal-content label {
+    display: block;
+    text-align: left;
+    margin-bottom: 2px;
+    font-size: 14px;   
+    font-weight: 600;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
+}
+
+.add-btn {
+    font-size: 28px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: #3498db;
+    color: white;
+    cursor: pointer;
+    margin: 20px;
+}
+
 
 /* Animations */
 @keyframes fadeIn {

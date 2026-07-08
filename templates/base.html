@@ -4,49 +4,266 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}?v=9999">
     {% block head %}{% endblock %}
 </head>
 <body>
     {% block body %}{% endblock %}
 
-<div id="deleteModal" class="modal">
-    <div class="modal-content">
-        <h3>Сигурни ли сте, че искате да изтриете този запис?</h3>
-        <p id="deleteItemTitle"></p>
+    <div id="updateModal" class="modal">
+        <div class="modal-content update-modal">
 
-        <div class="modal-buttons">
-            <a id="confirmDeleteBtn" class="confirm-btn">Да, изтрий</a>
-            <button class="cancel-btn" onclick="closeDeleteModal()">Отказ</button>
+            <h3>Update Idea</h3>
+
+            <form id="updateForm" method="POST">
+
+                <label for="updateTitle"><strong>Title</strong></label><br>
+                <input type="text" id="updateTitle" name="title"><br><br>
+
+                <label for="updateDescription"><strong>Description</strong></label><br>
+                <input type="text" id="updateDescription" name="description"><br><br>
+
+                <label for="updateClient"><strong>Client</strong></label><br>
+                <input type="text" id="updateClient" name="client"><br><br>
+
+                <label for="updateOwner"><strong>Owner</strong></label><br>
+                <input type="text" id="updateOwner" name="owner"><br><br>
+
+                <label for="updateMeetingDate"><strong>Meeting Date</strong></label><br>
+                <input type="datetime-local"
+                       id="updateMeetingDate"
+                       name="meeting_date"><br><br>
+
+                <label for="updateStatus"><strong>Status</strong></label><br>
+                <select id="updateStatus" name="status">
+                    <option value="Нова">Нова</option>
+                    <option value="Одобрена">Одобрена</option>
+                    <option value="В процес">В процес</option>
+                    <option value="Направена">Направена</option>
+                    <option value="Отказана">Отказана</option>
+                </select><br><br>
+
+                <label for="updatePriority"><strong>Priority</strong></label><br>
+                <select id="updatePriority" name="priority" required>
+                    <option value="Няма">Няма</option>
+                    <option value="Нисък">Нисък</option>
+                    <option value="Среден">Среден</option>
+                    <option value="Висок">Висок</option>
+                </select><br><br>
+
+                <input type="submit" value="Save Changes" onclick="return validateUpdateForm()">
+
+            </form>
         </div>
     </div>
-</div>
-    <script>
-        function openDeleteModal(id, title) {
-            document.getElementById("deleteItemTitle").innerText = title;
-            document.getElementById("confirmDeleteBtn").href = "/delete/" + id;
-            document.getElementById("deleteModal").style.display = "block";
-        }
 
-        function closeDeleteModal() {
-            document.getElementById("deleteModal").style.display = "none";
-        }
-    </script>
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+
+            <h3>Delete Idea</h3>
+
+            <p>
+                Are you sure you want to delete:
+                <strong id="deleteItemTitle"></strong>?
+            </p>
+
+            <div class="modal-buttons">
+                <a id="confirmDeleteBtn" class="confirm-btn">
+                    Delete
+                </a>
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    onclick="closeDeleteModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content update-modal">
+            <h3>Добави идея</h3>
+
+            <form action="/" method="POST" id="addFormModal">
+                <label>Title</label>
+                <input type="text" name="title" required>
+
+                <label>Description</label>
+                <input type="text" name="description" required>
+
+                <label>Client</label>
+                <input type="text" name="client" required>
+
+                <label>Meeting Date</label>
+                <input type="datetime-local" name="meeting_date" required>
+
+                <label>Owner</label>
+                <input type="text" name="owner" required>
+
+                <label>Priority</label>
+                <select name="priority" required>
+                    <option value="Няма">Няма</option>
+                    <option value="Нисък">Нисък</option>
+                    <option value="Среден">Среден</option>
+                    <option value="Висок">Висок</option>
+                </select>
+
+                <input type="submit" value="Добави запис" onclick="return validateAddForm()">
+            </form>
+        </div>
+    </div>
+
     <script>
-document.addEventListener("keydown", function(e) {
-    if (e.key === "Escape") {
-        closeDeleteModal();
-    }
-});
+/* Modal manager: single source of truth for opening/closing modals */
+(function() {
+  // Keep track of currently open modal id
+  let openModalId = null;
+  let zBase = 10000;
+
+  function closeModalById(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = 'none';
+    el.classList.remove('open-modal');
+    if (openModalId === id) openModalId = null;
+  }
+
+  function closeAllModals() {
+    document.querySelectorAll('.modal.open-modal').forEach(m => {
+      m.style.display = 'none';
+      m.classList.remove('open-modal');
+    });
+    openModalId = null;
+  }
+
+  function openModalById(id) {
+    // Close any other modal first
+    if (openModalId && openModalId !== id) closeAllModals();
+
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    // Bring to front by incrementing z-index
+    zBase += 1;
+    el.style.zIndex = zBase;
+    el.style.display = 'flex';
+    el.classList.add('open-modal');
+    openModalId = id;
+  }
+
+  // Expose functions globally for your inline calls
+  window.openDeleteModal = function(id, title) {
+    const titleEl = document.getElementById("deleteItemTitle");
+    const confirmBtn = document.getElementById("confirmDeleteBtn");
+    if (titleEl) titleEl.innerText = title;
+    if (confirmBtn) confirmBtn.href = "/delete/" + id;
+    openModalById("deleteModal");
+  };
+
+  window.closeDeleteModal = function() {
+    closeModalById("deleteModal");
+  };
+
+  window.openUpdateModal = function(
+    id, title, description, client, owner, status, priority, meeting_date
+  ) {
+    // populate fields (only if elements exist)
+    const form = document.getElementById("updateForm");
+    if (form) form.action = "/update/" + id;
+
+    const setVal = (idAttr, val) => {
+      const el = document.getElementById(idAttr);
+      if (el) el.value = val || '';
+    };
+
+    setVal("updateTitle", title);
+    setVal("updateDescription", description);
+    setVal("updateClient", client);
+    setVal("updateOwner", owner);
+    setVal("updateStatus", status);
+    setVal("updatePriority", priority);
+    setVal("updateMeetingDate", meeting_date);
+
+    openModalById("updateModal");
+  };
+
+  window.closeUpdateModal = function() {
+    closeModalById("updateModal");
+  };
+
+  window.openAddModal = function() {
+    openModalById("addModal");
+  };
+
+  window.closeAddModal = function() {
+    closeModalById("addModal");
+  };
+
+  window.validateUpdateForm = function() {
+    const fields = [
+      "updateTitle",
+      "updateDescription",
+      "updateClient",
+      "updateOwner",
+      "updateMeetingDate"
+    ];
+
+    let valid = true;
+
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el.value.trim()) {
+        el.classList.add("input-error");
+        valid = false;
+      } else {
+        el.classList.remove("input-error");
+      }
+    });
+
+    return valid;
+  };
+
+  window.validateAddForm = function() {
+    const fields = ["title", "description", "client", "meeting_date", "owner"];
+    let valid = true;
+
+    fields.forEach(name => {
+      const el = document.querySelector(`#addModal [name="${name}"]`);
+      if (el && !el.value.trim()) {
+        el.classList.add("input-error");
+        valid = false;
+      } else if (el) {
+        el.classList.remove("input-error");
+      }
+    });
+
+    return valid;
+  };
+
+  // Global document handlers
+  document.addEventListener('click', function(e) {
+    // If click is inside an open modal, do nothing (prevent outside-click logic)
+    if (e.target.closest('.modal-content')) return;
+
+    // If click is on an element that has data-modal-open attribute, let its handler run
+    if (e.target.closest('[data-modal-ignore]')) return;
+
+    // Otherwise close any open modal
+    closeAllModals();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAllModals();
+  });
+
+  // Prevent clicks inside modal-content from bubbling to document click handler
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.modal-content')) e.stopPropagation();
+  }, true);
+
+})();
 </script>
-<script>
-window.onclick = function(event) {
-    const modal = document.getElementById("deleteModal");
-    if (event.target === modal) {
-        closeDeleteModal();
-    }
-}
-</script>
-</div>
 </body>
 </html>

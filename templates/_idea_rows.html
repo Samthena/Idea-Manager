@@ -1,0 +1,58 @@
+{% if tasks %}
+{% for idea in tasks %}
+<tr>
+    <td>{{ idea.unique_id }}</td>
+
+    <td>
+        <a href="{{ url_for('idea_details', id=idea.id) }}">
+            {{ idea.title }}
+        </a>
+    </td>
+
+    <td>{{ idea.client }}</td>
+    <td>{{ idea.owner }}</td>
+
+    <td class="status {{ idea.status|lower|replace(' ', '-') }}">
+        {{ idea.status }}
+    </td>
+    <td>
+        <span class="priority
+            {% if idea.priority == 'Висок' %}high
+            {% elif idea.priority == 'Среден' %}medium
+            {% elif idea.priority == 'Нисък' %}low
+            {% else %}none
+            {% endif %}">
+            {{ idea.priority }}
+        </span>
+    </td>
+
+    <td>{{ idea.meeting_date.strftime("%Y-%m-%d %H:%M") }}</td>
+
+    <td>
+        <a href="{{ url_for('idea_details', id=idea.id) }}">Детайли</a>
+        <a href="javascript:void(0)"
+            data-modal-ignore
+            onclick='openUpdateModal(
+            {{ idea.id }},
+            {{ idea.title|tojson }},
+            {{ idea.description|tojson }},
+            {{ idea.client|tojson }},
+            {{ idea.owner|tojson }},
+            {{ idea.status|tojson }},
+            {{ idea.priority|tojson }},
+            "{{ idea.meeting_date.strftime('%Y-%m-%dT%H:%M') }}"
+            )'>
+            Обнови
+        </a>
+        <br>
+        <a href="javascript:void(0)"
+            data-modal-ignore
+            onclick='openDeleteModal({{ idea.id }}, {{ idea.title|tojson }})'>Изтрий</a>
+    </td>
+</tr>
+{% endfor %}
+{% else %}
+<tr>
+    <td colspan="8" style="text-align:center;">No results found.</td>
+</tr>
+{% endif %}
