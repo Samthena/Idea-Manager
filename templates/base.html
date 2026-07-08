@@ -57,6 +57,66 @@
         </div>
     </div>
 
+
+    <div id="detailsModal" class="modal">
+      <div class="modal-content update-modal">
+
+          <h3>Idea Details</h3>
+
+          <div class="detail-row">
+              <span class="detail-label">Unique ID</span>
+              <span id="detailsUniqueId"></span>
+          </div>
+
+          <div class="detail-row">
+              <span class="detail-label">Title</span>
+              <span id="detailsTitle"></span>
+          </div>
+
+          <div class="detail-row">
+              <span class="detail-label">Description</span>
+              <p id="detailsDescription" class="details-description"></p>
+          </div>
+
+          <div class="detail-row">
+              <span class="detail-label">Client</span>
+              <span id="detailsClient"></span>
+          </div>
+
+          <div class="detail-row">
+              <span class="detail-label">Owner</span>
+              <span id="detailsOwner"></span>
+          </div>
+
+          <div class="detail-row">
+              <span class="detail-label">Status</span>
+              <span id="detailsStatus"></span>
+          </div>
+
+          <div class="detail-row">
+              <span class="detail-label">Priority</span>
+              <span id="detailsPriority"></span>
+          </div>
+
+          <div class="detail-row">
+              <span class="detail-label">Meeting Date</span>
+              <span id="detailsMeetingDate"></span>
+          </div>
+
+          <div class="detail-row">
+              <span class="detail-label">Added</span>
+              <span id="detailsDateCreated"></span>
+          </div>
+
+          <br>
+
+          <button type="button" onclick="closeDetailsModal()">
+              Close
+          </button>
+
+      </div>
+  </div>
+
     <div id="deleteModal" class="modal">
         <div class="modal-content">
 
@@ -195,6 +255,34 @@
   window.openAddModal = function() {
     openModalById("addModal");
   };
+
+window.openDetailsModal = function(
+    unique_id,
+    title,
+    description,
+    client,
+    owner,
+    status,
+    priority,
+    meeting_date,
+    date_created
+) {
+    document.getElementById("detailsUniqueId").textContent = unique_id;
+    document.getElementById("detailsTitle").textContent = title;
+    document.getElementById("detailsDescription").textContent = description;
+    document.getElementById("detailsClient").textContent = client;
+    document.getElementById("detailsOwner").textContent = owner;
+    document.getElementById("detailsStatus").textContent = status;
+    document.getElementById("detailsPriority").textContent = priority;
+    document.getElementById("detailsMeetingDate").textContent = meeting_date;
+    document.getElementById("detailsDateCreated").textContent = date_created;
+
+    openModalById("detailsModal");
+};
+
+window.closeDetailsModal = function() {
+    closeModalById("detailsModal");
+};
 
   window.closeAddModal = function() {
     closeModalById("addModal");

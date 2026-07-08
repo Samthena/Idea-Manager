@@ -16,20 +16,60 @@
         {{ idea.status }}
     </td>
     <td>
-        <span class="priority
-            {% if idea.priority == 'Висок' %}high
-            {% elif idea.priority == 'Среден' %}medium
-            {% elif idea.priority == 'Нисък' %}low
-            {% else %}none
-            {% endif %}">
-            {{ idea.priority }}
-        </span>
-    </td>
 
+<form method="POST"
+      action="{{ url_for('update_priority', id=idea.id) }}">
+
+    <select name="priority"
+            onchange="this.form.submit()">
+
+        <option value="Няма"
+            {% if idea.priority == "Няма" %}selected{% endif %}>
+            Няма
+        </option>
+
+        <option value="Нисък"
+            {% if idea.priority == "Нисък" %}selected{% endif %}>
+            Нисък
+        </option>
+
+        <option value="Среден"
+            {% if idea.priority == "Среден" %}selected{% endif %}>
+            Среден
+        </option>
+
+        <option value="Висок"
+            {% if idea.priority == "Висок" %}selected{% endif %}>
+            Висок
+        </option>
+
+    </select>
+
+</form>
+
+</td>
     <td>{{ idea.meeting_date.strftime("%Y-%m-%d %H:%M") }}</td>
 
     <td>
-        <a href="{{ url_for('idea_details', id=idea.id) }}">Детайли</a>
+        
+        <a href="javascript:void(0)"
+        data-modal-ignore
+        onclick='openDetailsModal(
+                {{ idea.unique_id|tojson }},
+                {{ idea.title|tojson }},
+                {{ idea.description|tojson }},
+                {{ idea.client|tojson }},
+                {{ idea.owner|tojson }},
+                {{ idea.status|tojson }},
+                {{ idea.priority|tojson }},
+                "{{ idea.meeting_date.strftime("%Y-%m-%d %H:%M") }}",
+                "{{ idea.date_created.strftime("%Y-%m-%d %H:%M") }}"
+        )'>
+            Детайли
+        </a>
+
+
+
         <a href="javascript:void(0)"
             data-modal-ignore
             onclick='openUpdateModal(
@@ -44,7 +84,11 @@
             )'>
             Обнови
         </a>
+
+
         <br>
+
+
         <a href="javascript:void(0)"
             data-modal-ignore
             onclick='openDeleteModal({{ idea.id }}, {{ idea.title|tojson }})'>Изтрий</a>

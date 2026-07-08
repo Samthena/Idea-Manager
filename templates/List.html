@@ -16,9 +16,23 @@
     {% else  %}
 
     <div class="search-bar">
-    <input type="text" id="liveSearch" placeholder="Search ideas...">
-</div>
 
+        <input
+            type="text"
+            id="liveSearch"
+            placeholder="Search ideas...">
+
+        <select id="priorityFilter">
+            <option value="">All Priorities</option>
+            <option value="Няма">Няма</option>
+            <option value="Нисък">Нисък</option>
+            <option value="Среден">Среден</option>
+            <option value="Висок">Висок</option>
+        </select>
+
+    </div>
+
+    
  <table border=1 frame=box rules=all style="width:70%">
     <thead>
     <tr>
@@ -36,16 +50,18 @@
     {% include '_idea_rows.html' %}
     </tbody>
 </table>
-<script>
-document.getElementById("liveSearch").addEventListener("input", function() {
-    const q = this.value;
 
-    fetch(`/search?q=${encodeURIComponent(q)}`)
+
+<script>
+function updateSearch() {
+
+    const q = document.getElementById("liveSearch").value;
+    const priority = document.getElementById("priorityFilter").value;
+
+    fetch(`/search?q=${encodeURIComponent(q)}&priority=${encodeURIComponent(priority)}`)
         .then(response => response.text())
         .then(html => {
-            // Replace only the row data, not the whole table --
-            // search.html renders the same _idea_rows.html partial,
-            // so #ideaTableBody always exists and has matching columns.
+
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, "text/html");
             const newBody = doc.getElementById("ideaTableBody");
@@ -53,9 +69,18 @@ document.getElementById("liveSearch").addEventListener("input", function() {
             if (newBody) {
                 document.getElementById("ideaTableBody").innerHTML = newBody.innerHTML;
             }
+
         });
-});
+}
+
+document.getElementById("liveSearch")
+    .addEventListener("input", updateSearch);
+
+document.getElementById("priorityFilter")
+    .addEventListener("change", updateSearch);
 </script>
+
+
     <br>
     {% endif %}
    <button 

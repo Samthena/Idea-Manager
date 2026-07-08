@@ -81,29 +81,40 @@ def confirm_delete(id):
     return render_template('confirm_delete.html', idea=idea)
 
 
-@app.route('/search', methods=['GET']) 
+@app.route('/search', methods=['GET'])
 def search():
     query = request.args.get('q', '').strip()
+    priority = request.args.get('priority', '')
 
-    if not query:
-        tasks = Todo.query.order_by(Todo.date_created.desc()).all()
-        return render_template('search.html', tasks=tasks, query=query)
+    tasks = Todo.query
 
-    try:
-        uid = int(query)
-    except ValueError:
-        uid = None
+    if query:
+        try:
+            uid = int(query)
+        except ValueError:
+            uid = None
 
-    tasks = Todo.query.filter(
-        (Todo.title.ilike(f"%{query}%")) |
-        (Todo.description.ilike(f"%{query}%")) |
-        (Todo.client.ilike(f"%{query}%")) |
-        (Todo.owner.ilike(f"%{query}%")) |
-        (Todo.unique_id == uid)
-    ).order_by(Todo.date_created).all()
+        tasks = tasks.filter(
+            (Todo.title.ilike(f"%{query}%")) |
+            (Todo.description.ilike(f"%{query}%")) |
+            (Todo.client.ilike(f"%{query}%")) |
+            (Todo.owner.ilike(f"%{query}%")) |
+            (Todo.unique_id == uid)
+        )
 
-    return render_template('search.html', tasks=tasks, query=query)
+    if priority:
+        tasks = tasks.filter(Todo.priority == priority)
 
+    tasks = tasks.order_by(Todo.date_created.desc()).all()
+
+    return render_template(
+        'search.html',
+        tasks=tasks,
+        query=query,
+        priority=priority
+    )
+
+    
 @app.route('/filter')
 def filter_tasks():
     status = request.args.get('status')
@@ -157,6 +168,16 @@ def update(id):
         # Editing happens through the modal on the list page (POST only);
         # there's no standalone update page, so just send GETs back there.
         return redirect(url_for('index'))
+
+@app.route("/update-priority/<int:id>", methods=["POST"])
+def update_priority(id):
+    idea = Todo.query.get_or_404(id)
+
+    idea.priority = request.form["priority"]
+
+    db.session.commit()
+
+    return redirect(request.referrer or url_for("index"))
 
 @app.route('/idea/<int:id>')
 def idea_details(id):
