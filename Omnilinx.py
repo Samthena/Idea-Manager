@@ -30,12 +30,16 @@ class Idea(db.Model):
 @app.route('/', methods=['POST','GET'])
 def index():
     if request.method == 'POST':
-        title = request.form['title']
+        title = request.form['title'].strip()
         description = request.form['description']
         client = request.form['client']
         meeting_date = request.form['meeting_date']
         owner = request.form['owner']
         priority = request.form.get('priority', 'Няма')
+        status = request.form.get('status', 'Нова')
+
+        if not title:
+            return ('Title is required', 400)
 
         meeting_date = datetime.strptime(request.form['meeting_date'], "%Y-%m-%dT%H:%M")
 
@@ -51,6 +55,7 @@ def index():
             meeting_date=meeting_date,
             owner=owner,
             priority=priority,
+            status=status,
             id=new_unique_id
         )
 
@@ -121,14 +126,14 @@ def search():
     
 @app.route('/filter')
 def filter_tasks():
-    status = request.args.get('status')
-    priority = request.args.get('priority')
-    client = request.args.get('client')
-    owner = request.args.get('owner')
+    status = request.args.get('status') or request.form.get('status')
+    priority = request.args.get('priority') or request.form.get('priority')
+    client = request.args.get('client') or request.form.get('client')
+    owner = request.args.get('owner') or request.form.get('owner')
 
     query = Idea.query
 
-    if status: 
+    if status:
         query = query.filter(Idea.status == status)
     if priority:
         query = query.filter(Idea.priority == priority)
