@@ -1,6 +1,17 @@
-import os
-import sys
+import pytest
+from Omnilinx import app as flask_app, db
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+@pytest.fixture
+def app():
+    flask_app.config.update({
+        "TESTING": True,
+        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+    })
+    with flask_app.app_context():
+        db.create_all()
+        yield flask_app
+        db.drop_all()
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
