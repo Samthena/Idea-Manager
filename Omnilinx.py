@@ -5,10 +5,10 @@ from datetime import datetime
 db = SQLAlchemy()
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Ideas.db'
 db.init_app(app)
 
-class Todo(db.Model):
+class Idea(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.String(1000), nullable=False)
@@ -18,11 +18,13 @@ class Todo(db.Model):
     status = db.Column(db.String(30), nullable=False, default='Нова')
     priority = db.Column(db.String(30), nullable=False, default='Няма')
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    unique_id = db.Column(db.Integer, unique=True, nullable=False)
 
+    @property
+    def unique_id(self):
+        return self.id
 
     def __repr__(self):
-        return '<Task %r>' % self.id
+        return '<Idea %r>' % self.id
 
 
 @app.route('/', methods=['POST','GET'])
@@ -33,39 +35,40 @@ def index():
         client = request.form['client']
         meeting_date = request.form['meeting_date']
         owner = request.form['owner']
-
+        priority = request.form.get('priority', 'Няма')
 
         meeting_date = datetime.strptime(request.form['meeting_date'], "%Y-%m-%dT%H:%M")
 
-        existing_ids = {t.unique_id for t in Todo.query.all()}
+        existing_ids = {t.id for t in Idea.query.all()}
         new_unique_id = 1
         while new_unique_id in existing_ids:
             new_unique_id += 1
         
-        new_task = Todo(
+        new_idea = Idea(
             title=title,
             description=description,
             client=client,
             meeting_date=meeting_date,
             owner=owner,
-            unique_id=new_unique_id
+            priority=priority,
+            id=new_unique_id
         )
 
         
         try:
-            db.session.add(new_task)
+            db.session.add(new_idea)
             db.session.commit()
             return redirect(url_for('index'))
         except Exception as e:
             return f"There was an issue adding your idea: {e}"
 
-    tasks = Todo.query.order_by(Todo.date_created.desc()).all()
-    return render_template('List.html', tasks=tasks)
+    ideas = Idea.query.order_by(Idea.date_created.desc()).all()
+    return render_template('List.html', ideas=ideas, tasks=ideas)
 
 
 @app.route('/delete/<int:id>')
 def delete(id):
-    task_to_delete = Todo.query.get_or_404(id)
+    task_to_delete = Idea.query.get_or_404(id)
 
     try:
         db.session.delete(task_to_delete)
@@ -77,7 +80,7 @@ def delete(id):
 
 @app.route('/confirm_delete/<int:id>')
 def confirm_delete(id):
-    idea = Todo.query.get_or_404(id)
+    idea = Idea.query.get_or_404(id)
     return render_template('confirm_delete.html', idea=idea)
 
 
@@ -86,7 +89,7 @@ def search():
     query = request.args.get('q', '').strip()
     priority = request.args.get('priority', '')
 
-    tasks = Todo.query
+    ideas = Idea.query
 
     if query:
         try:
@@ -94,22 +97,23 @@ def search():
         except ValueError:
             uid = None
 
-        tasks = tasks.filter(
-            (Todo.title.ilike(f"%{query}%")) |
-            (Todo.description.ilike(f"%{query}%")) |
-            (Todo.client.ilike(f"%{query}%")) |
-            (Todo.owner.ilike(f"%{query}%")) |
-            (Todo.unique_id == uid)
+        ideas = ideas.filter(
+            (Idea.title.ilike(f"%{query}%")) |
+            (Idea.description.ilike(f"%{query}%")) |
+            (Idea.client.ilike(f"%{query}%")) |
+            (Idea.owner.ilike(f"%{query}%")) |
+            (Idea.id == uid)
         )
 
     if priority:
-        tasks = tasks.filter(Todo.priority == priority)
+        ideas = ideas.filter(Idea.priority == priority)
 
-    tasks = tasks.order_by(Todo.date_created.desc()).all()
+    ideas = ideas.order_by(Idea.date_created.desc()).all()
 
     return render_template(
         'search.html',
-        tasks=tasks,
+        ideas=ideas,
+        tasks=ideas,
         query=query,
         priority=priority
     )
@@ -122,22 +126,23 @@ def filter_tasks():
     client = request.args.get('client')
     owner = request.args.get('owner')
 
-    query = Todo.query
+    query = Idea.query
 
     if status: 
-        query = query.filter(Todo.status == status)
+        query = query.filter(Idea.status == status)
     if priority:
-        query = query.filter(Todo.priority == priority)
+        query = query.filter(Idea.priority == priority)
     if client:
-        query = query.filter(Todo.client == client)
+        query = query.filter(Idea.client == client)
     if owner:
-        query = query.filter(Todo.owner == owner)
+        query = query.filter(Idea.owner == owner)
 
-    tasks = query.order_by(Todo.date_created.desc()).all()
+    ideas = query.order_by(Idea.date_created.desc()).all()
 
     return render_template(
         'List.html',
-        tasks=tasks,
+        ideas=ideas,
+        tasks=ideas,
         status=status,
         client=client,
         owner=owner,
@@ -147,7 +152,7 @@ def filter_tasks():
 
 @app.route('/update/<int:id>', methods = ['POST', 'GET'])
 def update(id):
-    task = Todo.query.get_or_404(id)
+    task = Idea.query.get_or_404(id)
     
     if request.method == 'POST':
         task.title = request.form['title']
@@ -171,7 +176,7 @@ def update(id):
 
 @app.route("/update-priority/<int:id>", methods=["POST"])
 def update_priority(id):
-    idea = Todo.query.get_or_404(id)
+    idea = Idea.query.get_or_404(id)
 
     idea.priority = request.form["priority"]
 
@@ -181,7 +186,7 @@ def update_priority(id):
 
 @app.route('/idea/<int:id>')
 def idea_details(id):
-    idea = Todo.query.get_or_404(id)
+    idea = Idea.query.get_or_404(id)
     return render_template('idea_details.html', idea=idea)
 
 
